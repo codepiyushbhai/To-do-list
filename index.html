@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Task Manager</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: white;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.app {
+  width: 600px;
+  background: rgba(255,255,255,0.05);
+  padding: 25px;
+  border-radius: 15px;
+  backdrop-filter: blur(15px);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Input Section */
+.input-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.input-box input, .input-box select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #38bdf8;
+  cursor: pointer;
+}
+
+/* Tasks */
+.task {
+  background: rgba(255,255,255,0.08);
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.task h3 {
+  margin-bottom: 5px;
+}
+
+.meta {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.high { color: #f87171; }
+.medium { color: #facc15; }
+.low { color: #4ade80; }
+
+/* Filter */
+.filters {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <h2>🚀 Pro Task Manager</h2>
+
+  <div class="input-box">
+    <input type="text" id="taskInput" placeholder="Task name">
+    <input type="date" id="date">
+    <input type="time" id="time">
+    <select id="priority">
+      <option value="low">Low Priority</option>
+      <option value="medium">Medium Priority</option>
+      <option value="high">High Priority</option>
+    </select>
+  </div>
+
+  <button onclick="addTask()">Add Task</button>
+
+  <div class="filters">
+    <button onclick="filterTasks('all')">All</button>
+    <button onclick="filterTasks('pending')">Pending</button>
+    <button onclick="filterTasks('completed')">Completed</button>
+  </div>
+
+  <div id="taskList"></div>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let currentFilter = "all";
+
+function renderTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  let filtered = tasks.filter(task => {
+    if (currentFilter === "completed") return task.completed;
+    if (currentFilter === "pending") return !task.completed;
+    return true;
+  });
+
+  filtered.forEach((task, index) => {
+    const div = document.createElement("div");
+    div.className = "task";
+
+    div.innerHTML = `
+      <h3 class="${task.completed ? 'completed' : ''}">${task.text}</h3>
+      <p class="meta">📅 ${task.date} | ⏰ ${task.time}</p>
+      <p class="meta ${task.priority}">Priority: ${task.priority}</p>
+
+      <div class="actions">
+        <button onclick="toggleTask(${index})">✔</button>
+        <button onclick="deleteTask(${index})">❌</button>
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
+
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function addTask() {
+  const text = document.getElementById("taskInput").value;
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const priority = document.getElementById("priority").value;
+
+  if (!text) return;
+
+  tasks.push({ text, date, time, priority, completed: false });
+  renderTasks();
+}
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  renderTasks();
+}
+
+function toggleTask(index) {
+  tasks[index].completed = !tasks[index].completed;
+  renderTasks();
+}
+
+function filterTasks(type) {
+  currentFilter = type;
+  renderTasks();
+}
+
+renderTasks();
+</script>
+
+</body>
+</html>
